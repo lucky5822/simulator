@@ -1,0 +1,115 @@
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #FFD700;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #logo {
+      display: block;
+      margin: 0 auto 20px; /* Centra orizzontalmente e aggiungi spazio sotto */
+      width: 200px; /* Imposta una larghezza fissa per il logo */
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 1200px;
+      margin: auto;
+      gap: 15px;
+    }
+
+    .column {
+      flex: 1;
+      min-width: 320px;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      border: 3px solid #FFD700;
+      box-shadow: inset 0px 0px 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .column h3 {
+      margin-bottom: 15px;
+      color: #FFD700;
+      font-weight: 700;
+    }
+
+    .button {
+      margin: 10px 0;
+      padding: 18px;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: 700;
+      border: 2px solid #FFD700;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: black;
+      color: #FFD700;
+      box-shadow: inset 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+
+    .button.active {
+      background-color: #FFD700;
+      color: black;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.9);
+    }
+
+    .button.output {
+      cursor: default;
+      background-color: #333;
+      border: 2px solid #888;
+      color: #aaa;
+      box-shadow: none;
+    }
+
+    .connection-button {
+      width: auto;
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 25px;
+    }
+
+    .connection-button.disconnect {
+      background-color: #660000;
+      color: #FFD700;
+    }
+
+    .indicator {
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      border-radius: 50%;
+      background-color: red;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+      transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .indicator.on {
+      background-color: #00ff00;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.9);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .column {
+        width: 90%;
+      }
+
+      .button {
+        font-size: 16px;
+        padding: 15px;
+      }
+    }
