@@ -5,7 +5,394 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>ESP32 BLE Controller | Black & Yellow</title>
     <style>
-        
+        :root {
+            --black: #121212;
+            --dark-gray: #1E1E1E;
+            --medium-gray: #2D2D2D;
+            --yellow: #FFD700;
+            --yellow-dark: #FFAA00;
+            --yellow-light: #FFF59D;
+            --white: #F5F5F5;
+            --red: #FF5252;
+            --green: #4CAF50;
+            --blue: #2196F3;
+            --border-radius: 12px;
+            --box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), 
+                         -5px -5px 10px rgba(255, 255, 255, 0.05);
+            --box-shadow-inset: inset 3px 3px 5px rgba(0, 0, 0, 0.3), 
+                              inset -3px -3px 5px rgba(255, 255, 255, 0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Montserrat', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.03) 0%, transparent 20%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--dark-gray);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--white);
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 28px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--yellow), var(--yellow-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .connection-panel {
+            background: linear-gradient(145deg, var(--dark-gray), var(--medium-gray));
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: center;
+            min-width: 180px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-connect {
+            background: linear-gradient(145deg, var(--green), #2E7D32);
+            color: white;
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-disconnect {
+            background: linear-gradient(145deg, var(--red), #C62828);
+            color: white;
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--red);
+        }
+
+        .status.connected .status-indicator {
+            background-color: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .device-info {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, var(--dark-gray), var(--medium-gray));
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.4), 
+                       -8px -8px 15px rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: var(--yellow);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--yellow);
+        }
+
+        .gpio-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .gpio-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .gpio-label {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--white);
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        .gpio-number {
+            color: var(--yellow);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .gpio-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-output {
+            background: linear-gradient(145deg, var(--medium-gray), var(--dark-gray));
+            box-shadow: var(--box-shadow);
+            color: var(--white);
+        }
+
+        .btn-output.active {
+            background: linear-gradient(145deg, var(--yellow-dark), var(--yellow));
+            color: var(--black);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-input {
+            background: linear-gradient(145deg, var(--medium-gray), var(--dark-gray));
+            box-shadow: var(--box-shadow);
+            color: var(--white);
+            cursor: default;
+        }
+
+        .btn-input::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--red);
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+
+        .btn-input.active::after {
+            background-color: var(--green);
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        .btn-command {
+            background: linear-gradient(145deg, var(--medium-gray), var(--dark-gray));
+            box-shadow: var(--box-shadow);
+            color: var(--yellow);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+		
+		/* Stile quando attivo */
+		.btn-command.active {
+			background: linear-gradient(145deg, var(--yellow-dark), var(--yellow));
+			color: var(--black);
+			box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+        .btn-command:hover {
+            background: linear-gradient(145deg, var(--dark-gray), var(--medium-gray));
+            box-shadow: var(--box-shadow-inset);
+            color: var(--yellow-light);
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Stile temperatura */
+		.temperature-card {
+			background: linear-gradient(145deg, var(--dark-gray), #166e23); /* Default verde */
+			border: 1px solid rgba(66, 165, 245, 0.2);
+			transition: background 0.3s ease-in-out;
+		}
+
+		.temperature-card.green {
+			background: linear-gradient(145deg, var(--dark-gray), #166e23); /* Verde */
+		}
+
+		.temperature-card.red {
+			background: linear-gradient(145deg, var(--dark-gray), #731615); /* Rosso */
+		}
+
+		.temperature-card.blue {
+			background: linear-gradient(145deg, var(--dark-gray), #1e3a8a); /* Blu */
+		}
+		
+		.temperature-status {
+			text-align: center;
+			margin-top: 8px;
+			font-size: 1rem;
+			font-weight: 500;
+			color: #ffffffcc; /* leggero trasparente bianco */
+		}
+
+        .temperature-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--white);
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .temperature-unit {
+            font-size: 16px;
+            color: var(--white);
+            opacity: 0.8;
+        }
+
+        .temperature-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--white);
+            font-size: 14px;
+        }
+
+        /* Animation for active buttons */
+        @keyframes clickWave {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            100% { transform: scale(1.1); opacity: 0; }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+        }
+		#logo {
+      display: block;
+      margin: 0 auto 20px; /* Centra orizzontalmente e aggiungi spazio sotto */
+      width: 200px; /* Imposta una larghezza fissa per il logo */
+    }
     </style>
 </head>
 <body>
