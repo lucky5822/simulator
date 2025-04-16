@@ -1,201 +1,442 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COUTH Simulator</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: #FFD700;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-
-    #logo {
-      display: block;
-      margin: 0 auto 20px; /* Centra orizzontalmente e aggiungi spazio sotto */
-      width: 200px; /* Imposta una larghezza fissa per il logo */
-    }
-
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 1200px;
-      margin: auto;
-      gap: 15px;
-    }
-
-    .column {
-      flex: 1;
-      min-width: 320px;
-      background: #222;
-      padding: 20px;
-      border-radius: 8px;
-      border: 3px solid #FFD700;
-      box-shadow: inset 0px 0px 10px rgba(255, 215, 0, 0.5);
-    }
-
-    .column h3 {
-      margin-bottom: 15px;
-      color: #FFD700;
-      font-weight: 700;
-    }
-
-    .button {
-      margin: 10px 0;
-      padding: 18px;
-      width: 100%;
-      border-radius: 6px;
-      font-size: 18px;
-      font-weight: 700;
-      border: 2px solid #FFD700;
-      cursor: pointer;
-      transition: all 0.3s ease-in-out;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: black;
-      color: #FFD700;
-      box-shadow: inset 0 0 5px rgba(255, 215, 0, 0.5);
-    }
-
-    .button.active {
-      background-color: #FFD700;
-      color: black;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.9);
-    }
-
-    .button.output {
-      cursor: default;
-      background-color: #333;
-      border: 2px solid #888;
-      color: #aaa;
-      box-shadow: none;
-    }
-
-    .connection-button {
-      width: auto;
-      display: inline-block;
-      margin: 10px;
-      padding: 15px 25px;
-    }
-
-    .connection-button.disconnect {
-      background-color: #660000;
-      color: #FFD700;
-    }
-
-    .indicator {
-      width: 20px;
-      height: 20px;
-      margin-left: 10px;
-      border-radius: 50%;
-      background-color: red;
-      box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-      transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    }
-
-    .indicator.on {
-      background-color: #00ff00;
-      box-shadow: 0 0 15px rgba(0, 255, 0, 0.9);
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .column {
-        width: 90%;
-      }
-
-      .button {
-        font-size: 16px;
-        padding: 15px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>ESP32 BLE Controller | Black & Yellow</title>
+    <style>
+        
+    </style>
 </head>
 <body>
-  <img id="logo" src="couth_white.png" alt="Logo COUTH">
-  <button id="connect" class="button connection-button">🔗 Connetti</button>
-  <button id="disconnect" class="button connection-button disconnect">❌ Disconnetti</button>
-  <div id="status">Status: Disconnesso</div>
-  <div class="container">
-    <div class="column">
-      <h3>📥 Input</h3>
-	  <button class="button input-btn" data-command="output_0">INPUT 0 <span class="indicator"></span></button>
-	  <button class="button input-btn" data-command="output_1">INPUT 1 <span class="indicator"></span></button>
-	  <button class="button input-btn" data-command="output_2">INPUT 2 <span class="indicator"></span></button>
-	  <button class="button input-btn" data-command="output_3">INPUT 3 <span class="indicator"></span></button>
+    <div class="container">
+        <header>
+            <div class="logo">
+			<img id="logo" src="couth_white.png" alt="Logo COUTH">                
+                <h1>SIMULATOR</h1>
+            </div>
+            <div class="status" id="connection-status">
+                <div class="status-indicator"></div>
+                <span>Disconnected</span>
+            </div>
+        </header>
+
+        <div class="connection-panel">
+            <button id="scan-btn" class="btn btn-connect">Find Simulator</button>
+            <div class="device-info" id="device-info"></div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2 class="card-title">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+                    </svg>
+                    Output LASER
+                </h2>
+                <div class="gpio-container" id="inputs-container"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M12,5A7,7 0 0,0 5,12A7,7 0 0,0 12,19A7,7 0 0,0 19,12A7,7 0 0,0 12,5Z" />
+                    </svg>
+                    Input LASER
+                </h2>
+                <div class="gpio-container" id="outputs-container"></div>
+            </div>
+
+            <!-- Nuova card per il sensore di temperatura -->
+            <div class="card temperature-card">
+                <h2 class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22a2 2 0 0 0 2-2V7.5L14.5 6l.5-3h-6l.5 3-1.5 1.5V20a2 2 0 0 0 2 2z" />
+                        <path d="M10 14h4" />
+                        <path d="M10 11h4" />
+                        <path d="M10 8h4" />
+                    </svg>
+                    Ambient Temperature
+                </h2>
+                <div class="temperature-value">
+                    <span id="temperature-value">--.-</span>
+                    <span class="temperature-unit">°C</span>
+                </div>
+				
+				<!-- Testo dinamico sullo stato -->
+				<div class="temperature-status" id="temperature-status">--</div>
+				
+                <div class="temperature-label">                    
+                    <span> <span id="temperature-gpio"></span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4,6H20V16H4M20,18A2,2 0 0,0 22,16V6C22,4.89 21.1,4 20,4H4C2.89,4 2,4.89 2,6V16A2,2 0 0,0 4,18H0V20H24V18H20Z" />
+                </svg>
+                Commands
+            </h2>
+            <div class="command-grid" id="commands-container"></div>
+        </div>
     </div>
-    <div class="column">
-      <h3>📤 Output</h3>
-      <button class="button output">OUT 0 <span class="indicator"></span></button>
-      <button class="button output">OUT 1 <span class="indicator"></span></button>
-      <button class="button output">OUT 2 <span class="indicator"></span></button>
-      <button class="button output">OUT 3 <span class="indicator"></span></button>
-    </div>
-    <div class="column">
-      <h3>⚙️ Commands</h3>
-	  <button class="button command-btn" data-command="command_0">START LASER <span class="indicator"></span></button>
-	  <button class="button command-btn" data-command="command_1">STOP LASER <span class="indicator"></span></button>
-	  <button class="button command-btn" data-command="command_2">EMERGENCY CH1 <span class="indicator"></span></button>
-	  <button class="button command-btn" data-command="command_3">ENABLE CH1 <span class="indicator"></span></button>
-    </div>
-  </div>
 
     <script>
-        let device;
-        let characteristic;
-        async function connect() {
-            try {
-                device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: false, // Non accetta tutti i dispositivi
-					filters: [{ name: 'couth_simulator' }], // Filtro per nome dispositivo
-                    optionalServices: ['ff678ea3-b243-4450-85a6-cf7ab436ff99']
+        // Configurazione GPIO 
+        const gpioConfig = {
+            inputs: [
+                { gpio: 2, name: "OUT 0" },
+                { gpio: 42, name: "OUT 1" },
+                { gpio: 41, name: "OUT 2" },
+                { gpio: 40, name: "OUT 3" },
+				{ gpio: 39, name: "OUT 4" },
+				{ gpio: 38, name: "OUT 5" },
+				{ gpio: 37, name: "OUT 6" },
+				{ gpio: 36, name: "OUT 7" },
+				{ gpio: 35, name: "FB EMERGENCY" },
+				{ gpio: 48, name: "FB ENABLE" },
+				{ gpio: 47, name: "FB KEY" }				
+            ],
+            outputs: [
+                { gpio: 4, name: "INPUT 0" },
+                { gpio: 5, name: "INPUT 1" },
+                { gpio: 6, name: "INPUT 2" },
+                { gpio: 7, name: "INPUT 3" },
+				{ gpio: 15, name: "INPUT 4" },
+				{ gpio: 16, name: "INPUT 5" },
+				{ gpio: 17, name: "INPUT 6" },
+				{ gpio: 18, name: "INPUT 7" }
+            ],
+            commands: [
+                { id: 1, name: "START" },
+                { id: 2, name: "STOP" },
+                { id: 3, name: "EMERGENCY" },
+                { id: 4, name: "ENABLE" },
+				{ id: 5, name: "KEY" },
+				{ id: 6, name: "REARM" }
+            ],
+            temperature: {
+                gpio: 21,  // GPIO a cui è collegato il sensore
+                name: "DS18B20",  // Tipo di sensore
+                updateInterval: 3000  // Intervallo di aggiornamento in ms
+            }
+        };
+
+        // Variabili BLE
+        let bleDevice = null;
+        let bleServer = null;
+        let gpioService = null;
+        let inputsCharacteristic = null;
+        let outputsCharacteristic = null;
+        let commandsCharacteristic = null;
+        let temperatureCharacteristic = null;
+        let temperatureInterval = null;
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            // Imposta GPIO temperatura
+            //document.getElementById('temperature-gpio').textContent = gpioConfig.temperature.gpio;
+            
+            renderGPIOControls();
+            setupEventListeners();
+        });
+
+        function renderGPIOControls() {
+            // Render inputs
+            const inputsContainer = document.getElementById('inputs-container');
+            gpioConfig.inputs.forEach(input => {
+                inputsContainer.innerHTML += `
+                    <div class="gpio-item">
+                        <span class="gpio-number">${input.name} <span class="gpio-number"></span></span>
+                        <button class="gpio-btn btn-input" data-gpio="${input.gpio}">
+                            <span>LOW</span>
+                        </button>
+                    </div>
+                `;
+            });
+
+            // Render outputs
+            const outputsContainer = document.getElementById('outputs-container');
+            gpioConfig.outputs.forEach(output => {
+                outputsContainer.innerHTML += `
+                    <div class="gpio-item">
+                        <span class="gpio-number">${output.name} <span class="gpio-number"></span></span>
+                        <button class="gpio-btn btn-output" data-gpio="${output.gpio}">
+                            <span>OFF</span>
+                        </button>
+                    </div>
+                `;
+            });
+
+            // Render commands
+            const commandsContainer = document.getElementById('commands-container');
+            gpioConfig.commands.forEach(command => {
+                commandsContainer.innerHTML += `
+                    <button class="btn btn-command" data-command="${command.id}">
+                        ${command.name}
+                    </button>
+                `;
+            });
+        }
+
+        function setupEventListeners() {
+            // Pulsante connessione
+            document.getElementById('scan-btn').addEventListener('click', toggleBleConnection);
+
+            // Pulsanti output
+            document.querySelectorAll('.btn-output').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    createRipple(e);
+                    const gpio = parseInt(this.dataset.gpio);
+                    const isActive = this.classList.toggle('active');
+					const state = isActive ? 1 : 0;
+                    this.querySelector('span').textContent = isActive ? 'ON' : 'OFF';
+                    
+					console.log("Invio comando: GPIO", gpio, "Stato", state);
+					
+                    if (outputsCharacteristic) {
+                        const value = new Uint8Array([gpio, state]);
+                        outputsCharacteristic.writeValue(value)
+							.then(() => console.log("Comando inviato con successo"))
+                            .catch(err => console.error('Errore scrittura output:', err));
+                    }
                 });
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('ff678ea3-b243-4450-85a6-cf7ab436ff99');
-                characteristic = await service.getCharacteristic('e2d76392-700f-4c3b-903b-0c5b7c8e914c');
-                document.getElementById("status").innerText = "Status: Connesso";
-            } catch (error) {
-                console.error('Errore di connessione:', error);
-            }
+            });
+
+            // Pulsanti comandi
+            document.querySelectorAll('.btn-command').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    createRipple(e);
+                    const commandId = this.dataset.command;
+					
+					// Toggle classe 'active' solo per i Command 3, 4, 5
+					if (commandId >= 3 && commandId <= 5) {
+					this.classList.toggle('active');
+					}
+					
+                    if (commandsCharacteristic) {
+                        const value = new Uint8Array([commandId]);
+                        commandsCharacteristic.writeValue(value)
+                            .catch(err => console.error('Errore invio comando:', err));
+                    }
+                });
+            });
         }
 
-        function disconnect() {
-            if (device && device.gatt.connected) {
-                device.gatt.disconnect();
-                document.getElementById("status").innerText = "Status: Disconnesso";
+        function createRipple(event) {
+            const btn = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - btn.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - btn.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('ripple');
+            
+            const ripple = btn.getElementsByClassName('ripple')[0];
+            if (ripple) {
+                ripple.remove();
             }
+            
+            btn.appendChild(circle);
         }
 
-        async function sendCommand(command) {
-            if (characteristic) {
-                let encoder = new TextEncoder();
-                await characteristic.writeValue(encoder.encode(command));
-                console.log('Comando inviato:', command);
+        async function toggleBleConnection() {
+            const scanBtn = document.getElementById('scan-btn');
+            
+            if (bleDevice && bleDevice.gatt.connected) {
+                await disconnectFromBleDevice();
             } else {
-                console.error("Dispositivo non connesso");
+                await connectToBleDevice();
+            }
+        }
+		
+		// === UUID BLE ===
+		const GPIO_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+		const INPUTS_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+		const OUTPUTS_CHAR_UUID = '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d';
+		const COMMANDS_CHAR_UUID = '8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d';
+		const TEMP_SERVICE_UUID = '0000181a-0000-1000-8000-00805f9b34fb';
+		const TEMP_CHAR_UUID = '00002a6e-0000-1000-8000-00805f9b34fb';
+
+        async function connectToBleDevice() {
+            const scanBtn = document.getElementById('scan-btn');
+            scanBtn.disabled = true;
+            scanBtn.textContent = 'Ricerca in corso...';
+            
+            try {
+                // Filtro per dispositivi "couth_simulator"
+				  const options = {
+					filters: [{ name: 'couth_simulator' }],
+					optionalServices: [GPIO_SERVICE_UUID, TEMP_SERVICE_UUID] // Usa le costanti qui
+				  };
+
+                bleDevice = await navigator.bluetooth.requestDevice(options);
+                
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                
+                // Aggiorna UI connessione
+                const statusElement = document.getElementById('connection-status');
+                statusElement.classList.add('connected');
+                statusElement.querySelector('span').textContent = 'Connesso';
+                
+                document.getElementById('device-info').textContent = `Connesso a: ${bleDevice.name || 'Dispositivo BLE'}`;
+                
+                scanBtn.textContent = 'Disconnetti';
+                scanBtn.classList.remove('btn-connect');
+                scanBtn.classList.add('btn-disconnect');
+                scanBtn.disabled = false;
+                
+                // Connetti al server GATT
+                bleServer = await bleDevice.gatt.connect();
+                
+                // Ottieni servizi
+                gpioService = await bleServer.getPrimaryService(GPIO_SERVICE_UUID);
+				inputsCharacteristic = await gpioService.getCharacteristic(INPUTS_CHAR_UUID);
+				outputsCharacteristic = await gpioService.getCharacteristic(OUTPUTS_CHAR_UUID);
+				commandsCharacteristic = await gpioService.getCharacteristic(COMMANDS_CHAR_UUID);
+				
+				
+                const tempService = await bleServer.getPrimaryService(TEMP_SERVICE_UUID);
+				temperatureCharacteristic = await tempService.getCharacteristic(TEMP_CHAR_UUID);
+                
+                // Ottieni caratteristiche
+                inputsCharacteristic = await gpioService.getCharacteristic(INPUTS_CHAR_UUID);
+                outputsCharacteristic = await gpioService.getCharacteristic(OUTPUTS_CHAR_UUID);
+                commandsCharacteristic = await gpioService.getCharacteristic(COMMANDS_CHAR_UUID);
+                temperatureCharacteristic = await tempService.getCharacteristic(TEMP_CHAR_UUID); // Temperature Measurement
+                
+                // Ascolta cambiamenti input
+                await inputsCharacteristic.startNotifications();
+                inputsCharacteristic.addEventListener('characteristicvaluechanged', handleInputChange);
+                
+                // Avvia lettura temperatura
+                startTemperatureMonitoring();
+                
+            } catch (error) {
+                console.error('Errore connessione BLE:', error);
+                alert(`Errore: ${error.message}`);
+                resetConnectionUI();
             }
         }
 
-        document.getElementById("connect").addEventListener("click", connect);
-        document.getElementById("disconnect").addEventListener("click", disconnect);
-		
-		document.querySelectorAll(".input-btn, .command-btn").forEach(button => {
-		button.addEventListener("click", function() {
-        let command = this.getAttribute("data-command");
-        sendCommand(command);
-    });
-});
+        function startTemperatureMonitoring() {
+            // Ferma eventuali intervalli esistenti
+            if (temperatureInterval) {
+                clearInterval(temperatureInterval);
+            }
+            
+            // Leggi temperatura immediatamente
+            readTemperature();
+            
+            // Imposta intervallo di lettura
+            temperatureInterval = setInterval(readTemperature, gpioConfig.temperature.updateInterval);
+        }
+
+        async function readTemperature() {
+            if (!temperatureCharacteristic) return;
+            
+            try {
+                // Leggi il valore della temperatura
+                const value = await temperatureCharacteristic.readValue();
+                
+                // Decodifica il valore (assumendo che sia un float a 32 bit)
+                const temperature = value.getFloat32(0, true).toFixed(1);
+                
+                // Aggiorna l'interfaccia
+                document.getElementById('temperature-value').textContent = temperature;
+				
+				
+				// Cambia il colore della card
+				const cardElement = document.querySelector('.temperature-card');
+				const statusElement = document.getElementById('temperature-status');
+				cardElement.classList.remove('blue', 'green', 'red');
+
+				if (temperature < 5) {
+					cardElement.classList.add('blue');
+					statusElement.textContent = 'Temperature LOW';
+				} else if (temperature > 35) {
+					cardElement.classList.add('red');
+					statusElement.textContent = 'Temperature HIGH';
+				} else {
+					cardElement.classList.add('green');
+					statusElement.textContent = 'Temperature OK';
+				}
+                
+            } catch (error) {
+                console.error('Errore lettura temperatura:', error);
+                document.getElementById('temperature-value').textContent = 'ERR';
+				document.getElementById('temperature-status').textContent = '';
+            }
+        }
+
+        function handleInputChange(event) {
+            const value = event.target.value;
+            const gpio = value.getUint8(0);
+            const state = value.getUint8(1);
+            
+            updateInputState(gpio, state === 1);
+        }
+
+        function updateInputState(gpio, isActive) {
+            const inputBtn = document.querySelector(`.btn-input[data-gpio="${gpio}"]`);
+            if (inputBtn) {
+                inputBtn.classList.toggle('active', isActive);
+                inputBtn.querySelector('span').textContent = isActive ? 'HIGH' : 'LOW';
+            }
+        }
+
+        async function disconnectFromBleDevice() {
+            if (!bleDevice) return;
+            
+            try {
+                if (bleDevice.gatt.connected) {
+                    await bleDevice.gatt.disconnect();
+                }
+            } catch (error) {
+                console.error('Errore disconnessione:', error);
+            } finally {
+                onDisconnected();
+            }
+        }
+
+        function onDisconnected() {
+            // Ferma il monitoraggio della temperatura
+            if (temperatureInterval) {
+                clearInterval(temperatureInterval);
+                temperatureInterval = null;
+            }
+            
+            // Resetta il valore della temperatura
+            document.getElementById('temperature-value').textContent = '--.-';
+            
+            resetConnectionUI();
+        }
+
+        function resetConnectionUI() {
+            const scanBtn = document.getElementById('scan-btn');
+            scanBtn.textContent = 'Find Simulator';
+            scanBtn.classList.remove('btn-disconnect');
+            scanBtn.classList.add('btn-connect');
+            scanBtn.disabled = false;
+            
+            const statusElement = document.getElementById('connection-status');
+            statusElement.classList.remove('connected');
+            statusElement.querySelector('span').textContent = 'Disconnesso';
+            
+            document.getElementById('device-info').textContent = '';
+            
+            bleDevice = null;
+            bleServer = null;
+            gpioService = null;
+            inputsCharacteristic = null;
+            outputsCharacteristic = null;
+            commandsCharacteristic = null;
+            temperatureCharacteristic = null;
+        }
     </script>
 </body>
 </html>
